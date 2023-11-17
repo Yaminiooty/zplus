@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  z_redis:
+    container_name: z_redis
+    image: redis
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass root
+    networks:
+      - app-network
+
+  z_rabbitmq:
+    container_name: z_rabbitmq
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    ports:
+      - "5672:5672"
+      - "8080:15672"
+    networks:
+      - app-network
+
+  z_mongo:
+    container_name: z_mongo
+    image: mongo:4.4.6
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+
+  z_go_app:
+    container_name: z_go_app
+    build:
+      context: ./
+      #dockerfile: Dockerfile.app
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    depends_on:
+      - z_redis
+      - z_rabbitmq
+      - z_mongo
+
+networks:
+  app-network:

@@ -1,0 +1,34 @@
+version: "3"
+
+services:
+  security_tool_metasploit:
+    image: metasploitframework/metasploit-framework
+    container_name: security_tool_metasploit
+    ports:
+      - "8081:8081"
+      - "55552:55552"
+      - "55553:55553"
+    depends_on:
+      - security_tool_metasploit_postgres
+    networks:
+      - metasploit
+    command:
+      - /bin/bash
+      - -c
+      - |
+        bundle exec thin --rackup msf-json-rpc.ru --address 0.0.0.0 --port 8081 --environment production --tag msf-json-rpc start &
+        ruby ./msfrpcd -U user -P pass -f
+
+  security_tool_metasploit_postgres:
+    image: postgres
+    container_name: security_tool_metasploit_postgres
+    environment:
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    networks:
+      - metasploit
+
+networks:
+  metasploit:
+    driver: bridge

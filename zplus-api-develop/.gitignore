@@ -1,0 +1,3 @@
+logs
+*.exe
+tests/test_logs*/*

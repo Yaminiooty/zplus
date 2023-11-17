@@ -1,0 +1,30 @@
+# docker build -f runtime-env/docker-containers-setup/Dockerfile-Tools runtime-env/docker-containers-setup -t security_tool
+# Ubuntu version
+FROM ubuntu:22.04
+ADD start-container.sh /
+ADD z_scalar.crt /
+RUN apt update && apt install -y net-tools curl openssh-server sudo nmap unzip default-jre zip tar git && \
+     wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.2.tgz && \
+     tar -xf /apache-jmeter-5.6.2.tgz && \
+     wget https://github.com/jeremylong/DependencyCheck/releases/download/v7.0.1/dependency-check-7.0.1-release.zip && \
+     unzip dependency-check-7.0.1-release.zip && \
+     git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git sqlmap-dev
+     
+ENV PATH=$PATH:/apache-jmeter-5.6.2/bin:/sqlmap-dev
+
+# Create a user “sshuser” and group “sshgroup”
+RUN groupadd sshgroup && useradd -ms /bin/bash -g sshgroup sshuser
+
+# Create sshuser directory in home
+RUN mkdir -p /home/sshuser/.ssh
+
+# Start the SSH service using systemctl
+RUN service ssh start
+
+# Expose port 22 for SSH
+EXPOSE 22
+
+EXPOSE 8775
+
+# Run SSH in the foreground
+CMD ["bash","/start-container.sh"]
